@@ -1,14 +1,11 @@
 package com.ivy.home
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import com.ivy.common.androidtest.IvyAndroidTest
 import com.ivy.common.androidtest.test_data.saveAccountWithTransactions
 import com.ivy.common.androidtest.test_data.transactionWithTime
 import com.ivy.navigation.Navigator
-import com.ivy.navigation.destinations.main.Home
+import com.ivy.wallet.home.HomeScreenRobot
 import com.ivy.wallet.ui.RootActivity
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
@@ -46,25 +43,16 @@ class HomeScreenTest : IvyAndroidTest() {
             transactions = listOf(transaction1, transaction2, transaction3)
         )
 
-        composeRule.awaitIdle()
-        composeRule.runOnUiThread {
-            navigator.navigate(Home.route)
-        }
-
-        composeRule.onNodeWithText(date.month.name, ignoreCase = true).performClick()
-        composeRule.onNodeWithText("August")
-            .assertIsDisplayed()
-            .performClick()
-
-        composeRule.onNodeWithText("Aug. 01").assertIsDisplayed()
-        composeRule.onNodeWithText("Aug. 31").assertIsDisplayed()
-
-        composeRule.onNodeWithText("Done").performClick()
-
-        composeRule.onNodeWithText("Upcoming").performClick()
-
-        composeRule.onNodeWithText("Transaction1").assertDoesNotExist()
-        composeRule.onNodeWithText("Transaction2").assertIsDisplayed()
-        composeRule.onNodeWithText("Transaction3").assertIsDisplayed()
+        HomeScreenRobot(composeRule)
+            .navigateTo(navigator)
+            .openDateRangeSheet(timeProvider)
+            .selectMonth("August")
+            .assertDateIsDisplayed(1, "August")
+            .assertDateIsDisplayed(31, "August")
+            .clickDone()
+            .clickUpcoming()
+            .assertTransactionDoesNotExist("Transaction1")
+            .assertTransactionIsDisplayed("Transaction2")
+            .assertTransactionIsDisplayed("Transaction3")
     }
 }
