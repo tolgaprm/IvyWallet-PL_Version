@@ -1,10 +1,14 @@
 package com.ivy.wallet.home
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnySibling
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.ivy.IvyComposeRule
 import com.ivy.common.time.provider.TimeProvider
+import com.ivy.data.CurrencyCode
 import com.ivy.navigation.Navigator
 import com.ivy.navigation.destinations.main.Home
 import kotlinx.coroutines.runBlocking
@@ -63,6 +67,34 @@ class HomeScreenRobot(
 
     fun assertTransactionIsDisplayed(transactionTitle: String): HomeScreenRobot {
         composeRule.onNodeWithText(transactionTitle).assertIsDisplayed()
+        return this
+    }
+
+    fun openOverdue(): HomeScreenRobot {
+        composeRule
+            .onNodeWithText("Overdue")
+            .performClick()
+        return this
+    }
+
+    fun assertBalanceIsDisplayed(amount: Double, currency: CurrencyCode): HomeScreenRobot {
+        val formattedAmount = if(amount % 1.0 == 0.0) {
+            amount.toInt().toString()
+        } else amount.toString()
+
+        composeRule
+            .onAllNodes(
+                hasText(formattedAmount) and hasAnySibling(hasText(currency)),
+                useUnmergedTree = true
+            )
+            .onFirst()
+            .assertIsDisplayed()
+
+        return this
+    }
+
+    fun clickGet(): HomeScreenRobot {
+        composeRule.onNodeWithText("Get").performClick()
         return this
     }
 }
